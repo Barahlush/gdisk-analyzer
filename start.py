@@ -8,7 +8,9 @@ from handlers import handle_files
 from auth import auth_drive
 import re
 
-service = auth_drive()
+credentials = '../secret/client_secret.json'
+
+service = auth_drive(credentials)
 
 page_token = None
 type_counter = Counter()

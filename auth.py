@@ -4,7 +4,7 @@ from oauth2client import file, client, tools
 
 
 # Setup the Drive v3 API
-def auth_drive(credential_path = '../secret/client_secret.json'):
+def auth_drive(credential_path):
     SCOPES = 'https://www.googleapis.com/auth/drive.metadata.readonly'
     store = file.Storage('credentials.json')
     creds = store.get()
