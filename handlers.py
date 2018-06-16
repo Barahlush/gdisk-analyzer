@@ -8,20 +8,26 @@ def handle_files(items):
         raise Exception('No files found!')
     else:
         for item in items:
-            try:
+            if 'name' in item:
                 name = item['name']
-            except:
+            else:
                 name = 'unknown'
-            try:
+
+            if 'mimeType' in item:
                 filetype = re.search(r'[\/\.]([a-z\-]+)$', item['mimeType'])
                 if (filetype == None):
                     filetype = item['mimeType']
                 else:
                     filetype = filetype.group(1)
-            except:
+            else:
                 filetype = 'unknown'
 
+            if 'size' in item:
+                size = item['size']
+            else:
+                size = 0
+
             type_counter[filetype] += 1
-            names[filetype].append(name)
+            names[filetype].append((name, size))
 
         return (type_counter, names)
