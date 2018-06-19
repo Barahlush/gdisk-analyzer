@@ -12,8 +12,11 @@ gd_handler = DriveHandler(credentials)
 
 gd_handler.connect()
 
-gd_handler.analyze()
+data, sum_size = gd_handler.analyze_drive()
+print("Summary size: {size:.2f} MB.".format(size = sum_size / 1024 / 1024))
+print(data.head())
 
+print(gd_handler.get_drive_info())
 
 '''
 ```

@@ -1,13 +1,16 @@
-from collections import Counter, defaultdict
 from apiclient.discovery import build
 from httplib2 import Http
 from oauth2client import file, client, tools
+from analytics import Analyzer
+from filewrappers import File, Folder, extract, get_filetype
+import pandas as pd
 
-import re
 
 class DriveHandler():
+    root = '"root"'
+    def __init__(self, user_id=0, credential_path=None):
 
-    def __init__(self, credential_path=None):
+        self.user_id = user_id
         self.local_cred_name = 'credentials.json'
         self.permissions = 'https://www.googleapis.com/auth/drive.metadata.readonly'
 
@@ -17,13 +20,19 @@ class DriveHandler():
         self.folder_handler = FolderHandler()
         self.analyzer = Analyzer()
 
+        self.data = None
+
+
+
     def set_credentials(self, credential_path):
         self.cred_path = credential_path
+
 
     def connect(self):
         SCOPES = self.permissions
         store = file.Storage(self.local_cred_name)
         creds = store.get()
+
         print("Getting credentials...")
         if not creds or creds.invalid:
             try:
@@ -31,110 +40,102 @@ class DriveHandler():
                 creds = tools.run_flow(flow, store)
             except:
                 print("Wrong credentials.")
+
         print("Connecting...")
         try:
             service = build('drive', 'v3', http=creds.authorize(Http()))
         except:
             print('Unable to get the service.')
-            return None
+            raise Exception('Check your connection.')
+
         self.service = service
         self.folder_handler.set_service(service)
         print("Succesfully authentificated!\n")
 
 
-    def get_info(self):
+    def get_drive_info(self):
         info = self.service.about().get(fields="user, storageQuota").execute()
+
         usr = info['user']
         storage = info['storageQuota']
-        print("""Email: {email}\nLimit: {lim}\nUsage: {usg}""".format(email=usr['emailAddress'], lim=storage['limit'], usg=storage['usageInDrive']))
         limit = int(storage['limit'])
         usage = int(storage['usage'])
-        inDrive = int(storage['usageInDrive'])
+        in_drive = int(storage['usageInDrive'])
+
+        print("""Email: {email}\nLimit: {lim}\nUsage: {usg}""".format(email=usr['emailAddress'], lim=limit, usg=in_drive))
+
         other = usage - inDrive
         free = limit - usage
-        return [free, inDrive, other]
+        return [free, in_drive, other]
 
-    def analyze(self, folder='"root"'):
-        folder_files = self.folder_handler.scan_folder(folder)
-        if folder_files != None:
-            type_counter, names, folders = self.analyzer.process_files(folder_files, True)
-        else:
-            pass
 
-        for pair in type_counter.most_common():
-        	print("{type} - {count}".format(type=pair[0], count=pair[1]))
-        for id, name in folders:
-            print('\nStarting to scan the folder {folder_name}...\n'.format(folder_name = name))
-            self.analyze(id)
+    def analyze_folder(self, folder):
+        data, sum_size = self.folder_handler.scan_folder(folder)
+        self.data = pd.concat([self.data, data])
+
+        indexes = list(data[data['mimeType'] == 'folder'].index.values)
+        for id in indexes:
+            print("scanning {}...".format(data.loc[id]['name']))
+            sum_size += self.analyze_folder(id)
+        if folder != DriveHandler.root:
+            self.data.loc[folder]['sum_size'] += sum_size
+        print("{0} size: {1} MB".format(self.data.loc[folder]['name'] if folder != DriveHandler.root else "Summary ", sum_size/1024/1024))
+        return sum_size
+
+
+    def analyze_drive(self):
+        self.data = pd.DataFrame(columns=['name', 'mimeType', 'size', 'sum_size', 'viewedByMeTime', 'parent', 'id']).set_index('id')
+        sum_size = self.analyze_folder(DriveHandler.root)
+
+        return self.data, sum_size
 
 
 class FolderHandler():
+    root = '"root"'
+
+
     def __init__(self, service=None):
         self.service = service
+
 
     def set_service(self, service):
         self.service = service
 
-    def read_page(self, folder='"root"', page_token=None, page_size=1000):
-        results = self.service.files().list(
+
+    def read_page(self, folder=root, page_token=None, page_size=1000):
+        page = self.service.files().list(
             pageSize = page_size,
             orderBy = 'name',
             spaces='drive',
             fields='nextPageToken, files',
             q = '{folder} in parents'.format(folder=folder),
             pageToken=page_token).execute()
-        return results
+        return page
 
-    def get_files(self, folder='"root"', page_token=None, page_size=1000):
-        results = self.read_page(folder, page_token, page_size)
-        files = results.get('files', [])
-        next_token = results.get('nextPageToken', None)
+
+    def get_files(self, folder=root, page_token=None, page_size=1000):
+        page = self.read_page(folder, page_token, page_size)
+
+        files = page.get('files', [])
+        next_token = page.get('nextPageToken', None)
+
         return files, next_token
 
-    def scan_folder(self, folder='"root"'):
+
+    def scan_folder(self, folder=root):
         page_token = None
         file_counter = 0
-        folder_files = []
+        files = []
         while page_token != None or file_counter == 0:
-            files, page_token = self.get_files(folder, page_token)
-            folder_files += files
-            file_counter += len(files)
+
+            cur_files, page_token = self.get_files(folder, page_token)
+            file_counter += len(cur_files)
+            files += cur_files
+
             print('{num} files scanned.'.format(num = file_counter))
-            if len(files) == 0:
+
+            if len(cur_files) == 0:
                 break
-        print('The folder has been scanned.')
-        print()
-        return folder_files
 
-class Analyzer():
-    def process_files(self, items, get_folders=True):
-        type_counter = Counter()
-        names = defaultdict(list)
-        folders = [] if get_folders else None
-        for item in items:
-            if 'name' in item:
-                name = item['name']
-            else:
-                name = 'unknown'
-
-            if 'mimeType' in item:
-                filetype = re.search(r'[\/\.]([a-z\-]+)$', item['mimeType'])
-                if (filetype == None):
-                    filetype = item['mimeType']
-                else:
-                    filetype = filetype.group(1)
-            else:
-                filetype = 'unknown'
-
-            if 'size' in item:
-                size = item['size']
-            else:
-                size = 0
-
-            type_counter[filetype] += 1
-            names[filetype].append((name, size))
-            if get_folders:
-                if filetype == "folder":
-                    folders.append(('"{}"'.format(item['id']), name))
-
-        return (type_counter, names, folders)
+        data, sum_size = extract(files)
+        return data, sum_size
