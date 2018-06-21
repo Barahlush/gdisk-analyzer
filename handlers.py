@@ -3,6 +3,7 @@ from httplib2 import Http
 from oauth2client import file, client, tools
 from files_tools import extract, get_filetype, gb_str   , mb_str
 import pandas as pd
+import numpy as np
 import sqlite3
 import os
 
@@ -14,16 +15,19 @@ class DriveHandler():
 #   Use scan_drive to get a pd.DataFrame with all files records.
 #
     root = '"root"'
-    def __init__(self, credential_path, email):
-        self.db_handler = DataBaseHandler(email)
-        self.user_id = self.db_handler.get_user_id(email)
+    def __init__(self, credential_path):
+        self.service = None
 
         self.cred_path = credential_path
-        self.local_cred_name = 'credentials_{}.json'.format(self.user_id)
+        self.local_cred_name = None
         self.permissions = 'https://www.googleapis.com/auth/drive.metadata.readonly'
+        self.cred_buf = str(np.random.randint(99999999)) + '.json'
 
-        self.service = None
         self.connect()
+        os.remove(self.cred_buf)
+        self.email = self.get_usr_email()
+        self.db_handler = DataBaseHandler(self.email)
+        self.user_id = self.db_handler.get_user_id(self.email)
 
 
         self.buffer = pd.DataFrame(
@@ -39,13 +43,14 @@ class DriveHandler():
 
 
     def connect(self):
-        store = file.Storage(self.local_cred_name)
+        print("Getting credentials...")
+
+        store = file.Storage(self.cred_buf)
         creds = store.get()
 
-        print("Getting credentials...")
         if not creds or creds.invalid:
             try:
-                flow = client.flow_from_clientsecrets(self.cred_path, self.permissions)
+                flow = client.flow_from_clientsecrets(self.cred_path, self.permissions, redirect_uri='http://127.0.0.1:5000/analytics')
                 creds = tools.run_flow(flow, store)
             except:
                 raise PermissionError()
@@ -64,17 +69,20 @@ class DriveHandler():
     def get_user_id(self):
         return self.user_id
 
-    def get_drive_info(self):
-        info = self.service.about().get(fields="user, storageQuota").execute()
-
+    def get_usr_email(self):
+        info = self.service.about().get(fields="user").execute()
         usr = info['user']
         email = usr['emailAddress']
+        return email
+
+    def get_drive_info(self):
+        info = self.service.about().get(fields="storageQuota").execute()
         storage = info['storageQuota']
+
         limit = int(storage['limit'])
         usage = int(storage['usage'])
         in_drive = int(storage['usageInDrive'])
 
-        print("\nLimit: {lim}\n".format(email=email, lim=gb_str(limit)))
         return (limit, usage, in_drive)
 
 
@@ -100,6 +108,7 @@ class DriveHandler():
             self.buffer.rename(index={'"root"' : self.root}, inplace=True)
             self.buffer.loc[self.root, 'parent'] = self.root
             folder = self.root
+
         indexes = list(data[data['mimeType'] == 'folder'].index.values)
         for id in indexes:
             cur_sum_size, cur_files = self.analyze_folder(id)

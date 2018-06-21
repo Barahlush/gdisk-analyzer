@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+    <!-- Bootstrap core CSS -->
+    <link href="static/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="static/main.css" rel="stylesheet">
+
+
+    <script>
+
+    $(document).ready(function(){
+      $("#analyzing").css("display", "none");
+      $("#start").click(function(){
+          $("#start").hide();
+          $("#descr").hide();
+          $("#analyzing").show();
+          $("#load").show();
+      });
+    });
+    </script>
+  </head>
+
+  <body class="text-center" id="body">
+
+
+    <div class="cover-container d-flex w-100 h-100 p-3 mx-auto flex-column">
+       <header class="masthead mb-auto">
+         <div class="inner">
+           <a href="/"><h3 class="masthead-brand">GDrive Analytics</h3></a>
+           <nav class="nav nav-masthead justify-content-center">
+             <a class="nav-link active" href="/" id="home">Home</a>
+             <a class="nav-link" href="/contacts" id="contact">Contact</a>
+           </nav>
+         </div>
+       </header>
+
+       <main role="main" class="inner cover" id=main>
+         <h1 class="display-4 page-header" id='label'>Google Drive Analytics</h1><br>
+         <p class="lead"><h2 id='descr'>We will analyze your drive and find its weak places.</h2></p>
+         <p class="lead"><h2 id='analyzing'>Analyzing....</h2></p>
+
+         <br><br><br>
+         <p class="lead">
+          <div class="loader" id="load"></div>
+           <a href="/analytics" class="btn btn-lg btn-secondary transition" id="start" onclick="loading()">Analyze!</a>
+         </p>
+
+       </main>
+
+
+       <footer class="mastfoot mt-auto">
+         <div class="inner" id="foot">
+           <p>Made by <a href="https://github.com/Barahlush">Barahlush</a>.</p>
+         </div>
+       </footer>
+     </div>
+  </body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap core CSS -->
+    <link href="static/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="static/analytics.css" rel="stylesheet">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+
+
+    <script>
+    $(document).ready(function(){
+        $("body").css("display", "none");
+        $("body").css("background-color", "white");
+        $("body").fadeIn(2000);
+        $("#img1").fadeIn(3000);
+        $("#img2").fadeIn(4000);
+        $("#img3").fadeIn(5000);
+        $("#img4").fadeIn(6000);
+
+    });
+    </script>
+  </head>
+
+  <body class="text-center" id="body" style="background-color:#333;">
+    <div class="cover-container d-flex w-200 h-100 p-3 mx-auto flex-column">
+       <header class="masthead mb-auto">
+         <div class="inner">
+           <a href="/"><h2 class="masthead-brand" id="title"><b>GDrive Analytics<b></h2></a>
+           <nav class="nav nav-masthead justify-content-center">
+             <a class="nav-link transition" href="/" id="home"><h3>Home</h3></a>
+             <a class="nav-link transition" href="/contacts" id="contact"><h3>Contact</h3></a>
+           </nav>
+         </div>
+       </header>
+       <div plots>
+       <h3 align="center"><b>Main information:<b></h3>
+       <img src="/static/plots/main_info_{{ user_id }}.png" style="float:left;width:600px;height:600px;" id="img1">
+       <h4 align="right"><b><br /><br />{{info_0}}</b></h4>
+       <br /><br /><br /><br /><br />
+       <h3 align="center"><b><br /><br />Types statistics:<b></h3>
+       <img src="/static/plots/disk_types_{{ user_id }}.png" style="float:right;width:700px;height:700px;" id="img2">
+       <h4 align="left"><b><br /><br /><br /><br /><br /><br />{{info_1}}</b></h4>
+       <img src="/static/plots/top_folders_{{ user_id }}.jpeg" style="float:left;width:700px;height:700px;left:0;" id="img3" onerror="this.style.display = 'none'">
+       <h4 align="left"><b><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br /><br />{{info_2}}</b></h4>
+       <img src="/static/plots/relevant_{{ user_id }}.png" style="float:right;width:1200px;height:600px;left:0;" id="img4" onerror="this.style.display = 'none'">
+       <h4 align="center"><b><br /><br /><br />{{info_3}}</b></h4>
+     </div>
+       <footer class="mastfoot mt-auto">
+         <div class="inner" id="foot">
+           <p>Made by <a href="https://github.com/Barahlush" id="git">Barahlush</a>.</p>
+         </div>
+       </footer>
+  </div>
+  </body>
+</html>
