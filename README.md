@@ -5,6 +5,12 @@ Uses Google Drive REST API.
 
 Current implementation is a Flask server with a website.
 
+### Features:
+* Different handlers to make work with a Google Drive easier.
+* Received information stored in database.
+* If there were no changes in the user's Drive - tool uses saved data.
+* File analysis shows disk structure and heavy/old files and folders.
+
 ## Getting started:
 Here is a good instruction how to set up all the prerequisites: [Google Drive API Quickstart](https://developers.google.com/drive/api/v3/quickstart/python).
 
