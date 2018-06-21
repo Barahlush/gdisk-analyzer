@@ -3,6 +3,8 @@
 Tool for analysing your Google Drive.<br> It collects files metadata and shows you, what takes the most space.<br>
 Uses Google Drive REST API.
 
+Current implementation is a Flask server with a website.
+
 ## Getting started:
 Here is a good instruction how to set up all the prerequisites: [Google Drive API Quickstart](https://developers.google.com/drive/api/v3/quickstart/python).
 
@@ -12,18 +14,22 @@ You need to have Python 3 and the Google Client Library installed:
 ``` bash
 pip install --upgrade google-api-python-client
 ```
+Then install libraries from the requirements.txt:
+``` bash
+pip install -r requirements.txt
+```
 
 The tool uses Google API credentials, so if you don't have one - you must make it here (create a project): [Google Developer Console](https://console.developers.google.com/flows/enableapi?apiid=drive). <br>
 
 Since you have credentials, download it as json and put in your directory.<br>
-Then change the "credentials" string in *start.py*.
+Then change the "credentials" string in *app.py*.
 
 ### Running
-Now you can run the tool by executing the *start.py* file as:
+Now you can run the server by executing the *app.py* file as:
 ``` bash
-python start.py
+python app.py
 ```
-It will run your browser, where you need to allow access to the application.
+Then all you need is to open http://127.0.0.1:5000/ in your browser.
 
 ## Feedback
 All your thoughts you can send here: baraltiva@gmail.com
