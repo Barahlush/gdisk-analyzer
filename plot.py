@@ -129,10 +129,10 @@ class Analyzer():
         # Make the plot
         plt.bar(y_pos, heights, width=width)
         plt.xticks(y_pos, bars, fontsize=15, rotation=30, ha='right')
-        plt.text(150, 380, 'High - how heavy are files inside.', ha='left', wrap=True, fontsize = 20)
-        plt.text(150, 360, 'Width - amount of files inside.', ha='left', wrap=True, fontsize = 20)
+        plt.text(150, 380, 'Height - how heavy are files inside.', ha='left', wrap=True, fontsize = 20)
+        plt.text(150, 360, 'Width - number of files in folder.', ha='left', wrap=True, fontsize = 20)
         plt.text(150, 320, 'Area - folder size.', ha='left', wrap=True, fontsize = 20)
-        plt.text(210, 430, 'Most heavy folders.', ha='left', wrap=True, fontsize = 35)
+        plt.text(210, 430, 'The heaviest folders.', ha='left', wrap=True, fontsize = 35)
 
         plt.tight_layout()
         plt.savefig('./static/plots/top_folders_{}.jpeg'.format(self.user_id))
