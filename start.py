@@ -10,9 +10,8 @@ import sys
 import os
 import re
 
-credentials = '../../secret/client_secret.json'
 gig = 1024 * 1024 * 1024
-def analyze():
+def analyze(credentials):
     print('------------------------------------------')
     print('-------------|Drive Analyzer|-------------')
     print('------------------------------------------')
@@ -22,10 +21,10 @@ def analyze():
         gd_handler = DriveHandler(credentials)
     except ConnectionError:
         print('Unable to connetc to the Drive. Check your connection, login and apply the permission request.')
-        sys.exit(0)
+        return (None, None, False)
     except PermissionError:
-        print('Wrong credentials. Make shure you are using your recent Google API credentials.')
-        sys.exit(0)
+        print('Wrong credentials. Check your Google API credentials.')
+        return (None, None, False)
 
     user_id = gd_handler.get_user_id()
     analyzer = Analyzer(user_id)
@@ -39,7 +38,7 @@ def analyze():
     types_info = analyzer.disk_types(data)
     top_folders_info = analyzer.top_folders(data)
     relevant_info = analyzer.relevant_folders(data)
-    return [main_info, types_info, top_folders_info, relevant_info], user_id
+    return [main_info, types_info, top_folders_info, relevant_info], user_id, True
 
 
     print('------------------------------------------')

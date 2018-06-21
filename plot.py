@@ -82,9 +82,9 @@ class Analyzer():
         folders = data[data['type'] == "folder"]
         files = data[data['type'] != "folder"]
         info = ""
-        top_files = files.sort_values(by='size', ascending=False).iloc[1:2*n]
+        top_files = files.sort_values(by='size', ascending=False).iloc[1:n + 1]
         if (len(folders) <= 1):
-            cur_msg = "\nThere is no folders on your disk.\n\nMost heavy files:\n"
+            cur_msg = "\nThere are no folders on your disk.\n\nMost heavy files:\n"
             print(cur_msg)
             info += cur_msg + '\n'
             for file in top_files.index:

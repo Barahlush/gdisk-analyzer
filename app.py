@@ -6,7 +6,7 @@ from start import analyze
 # create the application object
 app = Flask(__name__)
 
-credentials = '../../secret/client_secret.json'
+credentials = '../secret/client_secret.json'
 
 
 # use decorators to link the function to a url
@@ -16,9 +16,10 @@ def home():
 
 @app.route('/analytics')
 def analytics():
-    info, user_id = analyze()
+    info, user_id, success = analyze(credentials)
+    if not success:
+        sys.exit(0)
     args = {"info_{0}".format(k) : Markup(v.replace('\n', "<br />")) for (k, v) in enumerate(info)}
-    print(args)
     ans = render_template('analytics.html', **args, user_id=user_id)
     return ans  # return a string
 
@@ -29,4 +30,4 @@ def contacts():
 
 # start the server with the 'run()' method
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=False)
